@@ -1,9 +1,5 @@
 # libspng
 
-用 Zig 构建系统编译 [libspng](https://github.com/randy408/libspng) v0.7.4，并提供 translateC 模块。
-
-选项对齐上游 Meson（`meson.build` / `meson_options.txt` 中影响库本身的部分）。
-
 ## 要求
 
 - Zig 0.16.0 或更高版本
