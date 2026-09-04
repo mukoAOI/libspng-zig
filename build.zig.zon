@@ -1,6 +1,6 @@
 .{
     .name = .libspng,
-    .version = "0.7.4",
+    .version = "0.1.0",
     .fingerprint = 0x18a056a0a51ad843,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
