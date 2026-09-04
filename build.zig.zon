@@ -1,0 +1,23 @@
+.{
+    .name = .libspng,
+    .version = "0.7.4",
+    .fingerprint = 0x18a056a0a51ad843,
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .libspng = .{
+            .url = "git+https://github.com/randy408/libspng?ref=v0.7.4#fb768002d4288590083a476af628e51c3f1d47cd",
+            .hash = "N-V-__8AAModCAATNPKPcCapFcZFQHw0a8VjUyjAokEkvmW7",
+        },
+        .zlib_build = .{
+            .url = "git+https://github.com/mukoAOI/zlib?ref=0.1.0#d0b92555d1e3b7127816149c41650c7b0967429a",
+            .hash = "zlib_build-0.1.0-4uRf74vYAACrENjG2q5UOOMQgQ0ybfaYHHLhLqcRRvYM",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "build",
+        "include",
+        "README.md",
+    },
+}
