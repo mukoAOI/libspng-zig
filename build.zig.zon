@@ -9,8 +9,8 @@
             .hash = "N-V-__8AAModCAATNPKPcCapFcZFQHw0a8VjUyjAokEkvmW7",
         },
         .zlib_build = .{
-            .url = "git+https://github.com/mukoAOI/zlib?ref=0.1.0#d0b92555d1e3b7127816149c41650c7b0967429a",
-            .hash = "zlib_build-0.1.0-4uRf74vYAACrENjG2q5UOOMQgQ0ybfaYHHLhLqcRRvYM",
+            .url = "git+https://github.com/mukoAOI/zlib?ref=0.1.0#a812e46df574ed1e5b0ab8cb55e401c2b959d8fe",
+            .hash = "zlib_build-0.1.0-4uRf7wfaAADMHjBBVfa-emQq-3SmWeiFqR4t605uyVBc",
         },
     },
     .paths = .{
