@@ -8,13 +8,13 @@
 
 ## 作为依赖使用
 
-在 `build.zig.zon` 中添加（hash 用 `zig fetch --save git+https://github.com/mukoAOI/libspng-zig` 获取）：
+在 `build.zig.zon` 中添加（也可用 `zig fetch --save git+https://github.com/mukoAOI/libspng-zig#0.2.0` 自动写入）：
 
 ```zon
 .dependencies = .{
     .libspng = .{
-        .url = "git+https://github.com/mukoAOI/libspng-zig#<tag>",
-        .hash = "<运行 zig fetch --save 后填入>",
+        .url = "git+https://github.com/mukoAOI/libspng-zig?ref=0.2.0#21b539e76f654a4bc1e955b76ab09f3a8a910881",
+        .hash = "libspng-0.1.0-Q9gapQ4rAAAQrREvzNFmvrguuzmlTv2iGCt5a1cHEmD4",
     },
 },
 ```
