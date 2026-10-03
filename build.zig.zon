@@ -2,15 +2,19 @@
     .name = .libspng,
     .version = "0.1.0",
     .fingerprint = 0x18a056a0a51ad843,
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .libspng = .{
             .url = "git+https://github.com/randy408/libspng?ref=v0.7.4#fb768002d4288590083a476af628e51c3f1d47cd",
             .hash = "N-V-__8AAModCAATNPKPcCapFcZFQHw0a8VjUyjAokEkvmW7",
         },
         .zlib_build = .{
-            .url = "git+https://github.com/mukoAOI/zlib?ref=0.1.0#a812e46df574ed1e5b0ab8cb55e401c2b959d8fe",
-            .hash = "zlib_build-0.1.0-4uRf7wfaAADMHjBBVfa-emQq-3SmWeiFqR4t605uyVBc",
+            .url = "git+https://github.com/mukoAOI/zlib?ref=0.2.0#c7a9f815eeb9a84bdb2dda646ab304c210d3f67b",
+            .hash = "zlib_build-0.1.0-4uRf76LhAAC6Q6zbwu-XR55S29b5RKEEmh5-SVNxuTKl",
+        },
+        .translate_c = .{
+            .url = "git+https://codeberg.org/ziglang/translate-c?ref=2.0.0#0da7a16c3235b935b82421646076e0657cda21f6",
+            .hash = "translate_c-2.0.0-Q_BUWltOBwA0229IE8wwSxxGzOxyRso3hvcb1nN8oJX_",
         },
     },
     .paths = .{

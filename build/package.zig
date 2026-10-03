@@ -9,7 +9,7 @@ pub const ZlibDep = struct {
 
 pub const Options = struct {
     /// Corresponds to Meson `default_library` (static → `-DSPNG_STATIC`).
-    linkage: std.builtin.LinkMode = .static,
+    linkage: std.lang.LinkMode = .static,
     /// Meson `enable_opt` (false → `-DSPNG_DISABLE_OPT`).
     enable_opt: bool = true,
     /// Meson auto-detect of GNU `target_clones` (`-DSPNG_ENABLE_TARGET_CLONES`).
@@ -19,7 +19,7 @@ pub const Options = struct {
 
     pub fn fromBuild(b: *Build) Options {
         const raw_linkage = b.option([]const u8, "linkage", "Library linkage: static or dynamic") orelse "static";
-        const linkage: std.builtin.LinkMode = blk: {
+        const linkage: std.lang.LinkMode = blk: {
             if (std.mem.eql(u8, raw_linkage, "static")) break :blk .static;
             if (std.mem.eql(u8, raw_linkage, "dynamic")) break :blk .dynamic;
             std.debug.panic("invalid -Dlinkage value '{s}', expected 'static' or 'dynamic'", .{raw_linkage});
@@ -51,7 +51,7 @@ pub const Package = struct {
 pub fn configure(
     b: *Build,
     target: Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
+    optimize: std.lang.Optimize,
     libspng: *Build.Dependency,
     zlib: ZlibDep,
     options: Options,
@@ -88,8 +88,15 @@ pub fn configure(
     }
 
     // Meson: cc.links(target_clones) → -DSPNG_ENABLE_TARGET_CLONES
+    // The link check fails with the Zig toolchain: clang's target_clones
+    // resolver references __cpu_model / __cpu_indicator_init, which come from
+    // libgcc and are absent from Zig's compiler-rt on every target (COFF/ELF).
     if (options.enable_target_clones) {
-        lib.root_module.addCMacro("SPNG_ENABLE_TARGET_CLONES", "1");
+        std.debug.panic(
+            "-Denable_target_clones=true is unsupported by the Zig toolchain: " ++
+                "target_clones needs libgcc's __cpu_model/__cpu_indicator_init",
+            .{},
+        );
     }
 
     // Meson option multithreading (experimental)
@@ -116,32 +123,31 @@ pub fn configure(
 
     const install = b.addInstallArtifact(lib, .{});
 
-    const headers = b.addTranslateC(.{
-        .root_source_file = libspngAllHeader(b),
+    const translate_c = b.dependency("translate_c", .{});
+    const Translator = @import("translate_c").Translator;
+    const translator: Translator = .init(translate_c, .{
+        .name = "libspng_all",
+        .c_source_file = libspngAllHeader(b),
         .target = target,
         .optimize = optimize,
     });
-    headers.addIncludePath(lib.getEmittedIncludeTree());
-    headers.step.dependOn(&install.step);
+    translator.linkLibrary(lib);
     if (options.linkage == .static) {
         // Match Meson: consumers of the static library need SPNG_STATIC on Windows.
-        headers.defineCMacro("SPNG_STATIC", "1");
+        translator.defineCMacro("SPNG_STATIC", "1");
     }
 
-    const module = b.addModule("libspng", .{
-        .root_source_file = headers.getOutput(),
-        .target = headers.target,
-        .optimize = headers.optimize,
-        .link_libc = headers.link_libc,
-    });
-    module.linkLibrary(lib);
-    if (options.linkage == .static) {
-        module.addCMacro("SPNG_STATIC", "1");
-    }
+    // The translator's module is rooted at the generated Zig file and already
+    // carries the required `c_builtins` / `helpers` imports and library links.
+    _ = b.modules.put(
+        b.graph.arena,
+        b.graph.dupeString("libspng"),
+        translator.mod,
+    ) catch @panic("OOM");
 
     return .{
         .lib = lib,
-        .module = module,
+        .module = translator.mod,
         .install = &install.step,
     };
 }

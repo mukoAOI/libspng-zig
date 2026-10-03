@@ -2,30 +2,35 @@
 
 ## 要求
 
-- Zig 0.16.0 或更高版本
-- 需要链接 zlib（通过 `zlib_build` 包提供）
+- Zig 0.17.0 或更高版本
+- 需要 zlib：由 [zlib_build](https://github.com/mukoAOI/zlib) 0.2.0 作为传递依赖自动提供
+- Zig 绑定（`libspng.module("libspng")`）由官方 [translate-c](https://codeberg.org/ziglang/translate-c) 包（2.0.0，对应 Zig 0.17.x）在构建时生成，同样是传递依赖，消费方无需声明
 
 ## 作为依赖使用
 
-在 `build.zig.zon` 中添加 `libspng` 与 `zlib_build`，在 `build.zig` 中：
+在 `build.zig.zon` 中添加（hash 用 `zig fetch --save git+https://github.com/mukoAOI/libspng-zig` 获取）：
+
+```zon
+.dependencies = .{
+    .libspng = .{
+        .url = "git+https://github.com/mukoAOI/libspng-zig#<tag>",
+        .hash = "<运行 zig fetch --save 后填入>",
+    },
+},
+```
+
+在 `build.zig` 中（zlib 后端等选项会透传给内部的 zlib_build）：
 
 ```zig
-const zlib_build = b.dependency("zlib_build", .{
-    .target = target,
-    .optimize = optimize,
-    .backend = "zlib-ng", // 默认 "zlib-ng"，可改 "zlib"
-    .simd_level = "max", // generic / sse2 / avx2 / avx512 / max
-    .runtime_cpu_detection = true,
-});
-const z = zlib_build.artifact("z");
-
 const libspng = b.dependency("libspng", .{
     .target = target,
     .optimize = optimize,
     .linkage = "static", // 或 "dynamic"
+    .zlib = "zlib-ng", // zlib / zlib-ng
+    .simd_level = "max", // generic / sse2 / avx2 / avx512 / max
+    .runtime_cpu_detection = true,
     .enable_opt = true,
-    .enable_target_clones = false,
-    .multithreading = false,
+    // .multithreading = false,
 });
 const spng = libspng.artifact("spng"); // Meson library('spng') → libspng.a
 // Zig 模块：libspng.module("libspng")
@@ -37,8 +42,9 @@ const spng = libspng.artifact("spng"); // Meson library('spng') → libspng.a
 |----------|------|-------|------|
 | `linkage` | `static` | `default_library` | 静态库定义 `SPNG_STATIC` |
 | `enable_opt` | `true` | `enable_opt` | `false` → `SPNG_DISABLE_OPT`；x86 开启时加 `-msse2` |
-| `enable_target_clones` | `false` | `cc.links(target_clones)` | 定义 `SPNG_ENABLE_TARGET_CLONES` |
+| `enable_target_clones` | `false` | `cc.links(target_clones)` | **Zig 工具链不支持**：clang 的 resolver 依赖 libgcc 的 `__cpu_model`/`__cpu_indicator_init`，编译器自带的 compiler-rt 不提供；设为 `true` 会直接报错（Meson 的链接检测会将其判定为不可用） |
 | `multithreading` | `false` | `multithreading` | 定义 `SPNG_MULTITHREADING`（非 Windows 链 pthread） |
+| `zlib` | `zlib-ng` | `static_zlib` 等 | 透传给 zlib_build 的后端选择 |
 | （自动） | — | `find_library('m')` | Linux/BSD/macOS 链接 `libm` |
 
 未移植（测例 / 示例 / 未接入的压缩后端）：`dev_build`、`benchmarks`、`build_examples`、`use_miniz`、`oss_fuzz`。zlib 静态/动态由 `zlib_build` 的 `linkage` 控制，对应 Meson `static_zlib`。
@@ -52,6 +58,7 @@ zig build -Dsimd_level=avx2                  # zlib-ng，不含 AVX512
 zig build -Druntime_cpu_detection=false      # zlib-ng，仅 generic C
 zig build -Denable_opt=false                 # 关闭 libspng 架构优化
 zig build -Dlinkage=dynamic                  # 构建动态库
+zig build -Dmultithreading=true              # 实验性多线程
 ```
 
 ## 许可证
